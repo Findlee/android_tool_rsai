@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Repacker System Android Images (RSAI Tool) v.0.2
+# Repacker System Android Images (RSAI Tool) v.0.3
 # Author - Findlee
 # E-Mail - thefindlee@gmail.com
 # Profile on 4pda.ru - http://4pda.ru/forum/index.php?showuser=1498763
@@ -14,7 +14,7 @@ clear
 setterm -bold 
 tput setaf 1 
 echo "============================================================"
-echo "Repacker System Android Images (RSAI Tool) v.0.2 by Findlee"
+echo "Repacker System Android Images (RSAI Tool) v.0.3 by Findlee"
 echo "============================================================"
 tput sgr0
 
@@ -46,6 +46,23 @@ cd boot.img-ramdisk
 gzip -dc boot.img-ramdisk.gz | cpio -i
 rm -f boot.img-ramdisk.gz boot.img
 cd ..
+if [[ -e boot.img-ramdisk/sbin/ramdisk.cpio ]] && [[ -e boot.img-ramdisk/sbin/ramdisk-recovery.cpio ]]
+then
+echo "Found 2 Ramdisk's"
+cd boot.img-ramdisk/sbin/
+mkdir ramdisk
+mv ramdisk.cpio ramdisk
+cd ramdisk
+cpio -i < ramdisk.cpio
+rm ramdisk.cpio
+cd ..
+mkdir ramdisk-recovery
+mv ramdisk-recovery.cpio ramdisk-recovery
+cd ramdisk-recovery
+cpio -i < ramdisk-recovery.cpio
+rm ramdisk-recovery.cpio
+cd ../../../
+fi 
 tput setaf 1
 echo "Boot.img Extracted"
 echo "Press any key"
@@ -84,13 +101,20 @@ fi
 ;;
 
 3)tput setaf 1
-setterm -bold 
-if [[ -d boot.img-ramdisk ]] && [[ -e boot.img-zImage ]]
-then echo "Unpacked boot.img found"
+setterm -bold
 base=`cat configs/boot.img-base`
 cmdline=`cat configs/boot.img-cmdline`
 pagesize=`cat configs/boot.img-pagesize`
+if [[ -d boot.img-ramdisk ]] && [[ -e boot.img-zImage ]]
+then echo "Unpacked boot.img found"
 echo "Packing ramdisk"
+	if [[ -d boot.img-ramdisk/sbin/ramdisk ]] && [[ -d boot.img-ramdisk/sbin/ramdisk-recovery ]]
+	then
+	echo "Found 2 Unpacked of Ramdisk's"
+	./tools/mkbootfs boot.img-ramdisk/sbin/ramdisk > boot.img-ramdisk/sbin/ramdisk.cpio
+	./tools/mkbootfs boot.img-ramdisk/sbin/ramdisk-recovery > boot.img-ramdisk/sbin/ramdisk-recovery.cpio
+	rm -R boot.img-ramdisk/sbin/ramdisk boot.img-ramdisk/sbin/ramdisk-recovery
+	fi
 ./tools/mkbootfs boot.img-ramdisk | gzip > boot.img-ramdisk.gz
 echo "Creating New boot.img"
 ./tools/mkbootimg --kernel boot.img-zImage --ramdisk boot.img-ramdisk.gz --cmdline "$cmdline" --base "$base" --pagesize "$pagesize" -o new_boot.img
