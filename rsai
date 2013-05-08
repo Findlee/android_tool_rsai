@@ -34,7 +34,7 @@ setterm -bold
 if [[ -e boot.img ]] 
 then echo "Boot.img found"
 echo "Deleting Old Files"
-rm -Rf new_boot.img boot.img-* configs
+rm -Rf new_boot.img boot.img-* configs/boot.img*
 echo "Unpacking boot.img"
 ./tools/unpackbootimg -i boot.img
 mkdir -p configs
@@ -78,7 +78,7 @@ setterm -bold
 if [[ -e recovery.img ]]
 then echo "Recovery found"
 echo "Deleting Old Files"
-rm -Rf recovery.img-* new_recovery.img configs
+rm -Rf recovery.img-* new_recovery.img configs/recovery.img*
 echo "Unpacking recovery.img"
 ./tools/unpackbootimg -i recovery.img
 mkdir -p configs
